@@ -1,0 +1,279 @@
+#!/bin/bash
+
+# Copyright 2023 Google LLC
+# 
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# startup-script - The Google Cloud instance startup script for the
+#                  instance created by the Terraform code for the hub-and-
+#                  spoke project.
+#
+# Notes:
+#
+# (1) You can run this script interactively as well.
+#
+# (2) This script is run as root when it is run as a startup script. It
+#     checks the identity of the running user to bypass some commands if
+#     the user likely doesn't have root access.
+#
+# (3) The script needs to run as "bash" as it uses some features not
+#     available in the standard sh interpreter.
+#
+# This script does the following:
+#
+# (1) Checks if jq is installed and installs it automatically if this script
+#     is running as root otherwise display a message saying that jq should
+#     be installed later.
+#
+# (2) Creates several shell scripts in /usr/local/bin that are used in the
+#     demo display or use GCP metadata.
+#
+#     If you are running this script interactively, you can specify a
+#     different directory with the "-d" command line option.
+#
+#     api-call-compute-instances-list - call the API with this name
+#     gcpmd-access-token - displays the access token in the GCP metadata
+#     gcpmd-access-token-info - displays the access token tokeninfo results
+#     gcpmd-access-token-long - displays the long form of the access token
+#     gcpmd-all - displays all of the GCP metadata
+#     gcpmd-project-id - displays the project id from the GCP metadata
+#     gcpmd-sa-email - displays the service account email from the GCP metadata
+#     gcpmd-zone - displays the zone from the GCP metadata
+#
+# If the script is being launched as a startup script (not interactively),
+# the following things are added.
+#     
+# (3) Adds the email of the Secret Manager Admin service account
+#     as the SECRET_ADMIN_SA variable in the global bashrc file if running as
+#     root.
+#
+# (4) Adds a random secret name as the SECRET_NAME variable in the global
+#     bashrc.
+#
+# (5) Create the additional scripts:
+#
+#     create-secret - create a secret
+#     delete-secret - delete a secret
+
+WHOAMI=`whoami`
+INSTALL_DIRECTORY=/usr/local/bin
+GLOBAL_BASHRC=/etc/bash.bashrc
+
+usage() {
+  echo "Usage: $0 [ -d INSTALL_DIRECTORY ]" 1>&2 
+}
+
+while getopts ":d:" OPTION
+do
+  case "$OPTION" in
+    d)
+      INSTALL_DIRECTORY="$OPTARG"
+      ;;
+    *)
+      usage
+      exit 1
+      ;;
+  esac
+done
+
+if [ "$INSTALL_DIRECTORY" == "" ]
+then
+  usage
+  exit 1
+fi
+
+# Log running user
+
+echo $0: You are running as user "$WHOAMI".
+
+# Check if jq is present since it is needed by some of the scripts
+
+jq --version >/dev/null 2>&1
+if [ $? -ne 0 ]
+then
+  echo The jq command is not present and is needed by the metadata scripts.
+  if [ "$WHOAMI" == "root" ]
+  then
+    echo The jq package is being installed automatically.
+    apt update
+    apt -y install jq
+  else
+    echo Warning: Please install jq after this script completes.
+  fi
+fi
+
+# Add the SECRET_ADMIN_SA variable (the service account email) to the global
+# bashrc file if running as root and the variable is not empty.
+
+if [ "$WHOAMI" == "root" ]
+then
+  SECRET_ADMIN_SA="${secret_admin_sa_email}"
+  SECRET_NAME="${secret_name}"
+  if [ "$SECRET_ADMIN_SA" != "" ]
+  then
+    echo Adding the SECRET_ADMIN_SA variable to $GLOBAL_BASHRC.
+    echo export SECRET_ADMIN_SA="$SECRET_ADMIN_SA" >>$GLOBAL_BASHRC
+
+    echo Adding the SECRET_NAME variable to $GLOBAL_BASHRC.
+    echo export SECRET_NAME="$SECRET_NAME" >>$GLOBAL_BASHRC
+  fi
+fi
+
+###### Create api-compute-instances-list
+
+cat <<"EOF" > $INSTALL_DIRECTORY/api-compute-instances-list
+#/bin/sh
+
+# api-compute-instances-list - call the compute-instances-list API
+
+ZONE=`gcpmd-zone`
+ACCESS_TOKEN=`gcpmd-access-token`
+PROJECT_ID=`gcpmd-project-id`
+
+curl --silent \
+https://compute.googleapis.com/compute/v1/projects/$PROJECT_ID/zones/$ZONE/instances \
+-H "Authorization":"Bearer $ACCESS_TOKEN" |\
+jq --monochrome-output '.items[] | { name, zone, machineType, status }'
+EOF
+chmod 755 $INSTALL_DIRECTORY/api-compute-instances-list
+
+###### Create gcpmd-access-token
+
+cat <<"EOF" > $INSTALL_DIRECTORY/gcpmd-access-token
+#/bin/sh
+
+# gcpmd-access-token - display the metadata access token
+
+METADATA_URL=\
+"http://metadata.google.internal/computeMetadata/v1"\
+"/instance/service-accounts/default/token"
+
+ACCESS_TOKEN_LONG=`curl --silent "$METADATA_URL" \
+-H "Metadata-Flavor: Google"`
+ACCESS_TOKEN=`echo $ACCESS_TOKEN_LONG | jq --raw-output .access_token`
+echo $ACCESS_TOKEN
+EOF
+chmod 755 $INSTALL_DIRECTORY/gcpmd-access-token
+
+###### Create gcpmd-access-token-info
+
+cat <<"EOF" > $INSTALL_DIRECTORY/gcpmd-access-token-info
+#/bin/sh
+
+# gcpmd-access-token-info - send the access token to the tokeninfo endpoint
+
+ACCESS_TOKEN=`gcpmd-access-token`
+curl "https://oauth2.googleapis.com/tokeninfo?access_token=$ACCESS_TOKEN"
+EOF
+chmod 755 $INSTALL_DIRECTORY/gcpmd-access-token-info
+
+###### Create gcpmd-access-token-long
+
+cat <<"EOF" > $INSTALL_DIRECTORY/gcpmd-access-token-long
+#/bin/sh
+
+# gcpmd-access-token-long - display the entire metadata access token
+
+METADATA_URL=\
+"http://metadata.google.internal/computeMetadata/v1"\
+"/instance/service-accounts/default/token"
+
+ACCESS_TOKEN_LONG=`curl --silent "$METADATA_URL" \
+-H "Metadata-Flavor: Google"`
+echo $ACCESS_TOKEN_LONG | jq --monochrome-output
+EOF
+chmod 755 $INSTALL_DIRECTORY/gcpmd-access-token-long
+
+###### Create gcpmd-all
+
+cat <<"EOF" > $INSTALL_DIRECTORY/gcpmd-all
+#/bin/sh
+
+# gcpmd-all - display all of metadata
+
+METADATA_URL="http://metadata.google.internal/computeMetadata/v1"
+curl --silent "$METADATA_URL/?recursive=true" \
+  -H "Metadata-Flavor: Google" | jq --monochrome-output
+EOF
+chmod 755 $INSTALL_DIRECTORY/gcpmd-all
+
+###### Create gcpmd-project-id
+
+cat <<"EOF" > $INSTALL_DIRECTORY/gcpmd-project-id
+#!/bin/sh
+
+# gcpmd-project-id - display the project id from the instance metadata
+
+METADATA_URL=\
+"http://metadata.google.internal/computeMetadata/v1"\
+"/project/project-id"
+
+PROJECT_ID=`curl --silent "$METADATA_URL" \
+-H "Metadata-Flavor: Google"`
+
+echo $PROJECT_ID
+EOF
+chmod 755 $INSTALL_DIRECTORY/gcpmd-project-id
+
+###### Create gcpmd-zone
+
+cat <<"EOF" > $INSTALL_DIRECTORY/gcpmd-zone
+#/bin/sh
+
+# gcpmd-zone - display the metadata zone
+
+METADATA_URL=\
+"http://metadata.google.internal/computeMetadata/v1"\
+"/instance/zone"
+
+# use basename to remove the project information from the zone
+
+ZONE=`curl --silent "$METADATA_URL" \
+-H "Metadata-Flavor: Google" |\
+xargs -L 1 basename`
+echo $ZONE
+EOF
+chmod 755 $INSTALL_DIRECTORY/gcpmd-zone
+
+###### Create gcpmd-sa-email
+
+cat <<"EOF" > $INSTALL_DIRECTORY/gcpmd-sa-email
+#/bin/sh
+# gcpmd-zone - display the metadata zone
+METADATA_URL=\
+"http://metadata.google.internal/computeMetadata/v1"\
+"/instance/service-accounts/default/email"
+
+SA_EMAIL=`curl --silent "$METADATA_URL" \
+-H "Metadata-Flavor: Google"`
+echo $SA_EMAIL
+EOF
+chmod 755 $INSTALL_DIRECTORY/gcpmd-sa-email
+
+cat <<"EOF" > $INSTALL_DIRECTORY/create-secret
+#/bin/sh
+# create-secret - create a secret 
+
+echo Creating secret $SECRET_NAME...
+gcloud secrets create $SECRET_NAME
+EOF
+chmod 755 $INSTALL_DIRECTORY/create-secret
+
+cat <<"EOF" > $INSTALL_DIRECTORY/delete-secret
+#/bin/sh
+# delete-secret - delete a secret
+
+echo Deleting secret $RANDOM_SECRET_NAME...
+gcloud secrets delete $SECRET_NAME
+EOF
+chmod 755 $INSTALL_DIRECTORY/delete-secret
