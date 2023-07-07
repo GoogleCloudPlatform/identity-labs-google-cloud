@@ -112,7 +112,13 @@ The service account attached to the instance will impersonate this standalone se
 
     <p align="Center">Figure 3 - Google application login</p>
 
-1.  You may be asked if you want to enable the Cloud Resource Manager API (`cloudresourcemanager.googleapis.com`).  Enter "y" to confirm.
+1. You may be asked if you want to enable the Cloud Resource Manager API (`cloudresourcemanager.googleapis.com`).  Enter "y" to confirm.
+
+1. Enable the Identity and Access Management API.
+
+    ```
+    gcloud services enable iam.googleapis.com
+    ```
 
 ### Download the lab repository
 
