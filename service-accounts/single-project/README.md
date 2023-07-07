@@ -174,6 +174,10 @@ The service account attached to the instance will impersonate this standalone se
 
     You should see the message "Apply Complete" followed by output values.
 
+    If you receive an error message telling you that the IAM service has not been enabled, it may be that the previous enablement of the service hasn't
+    propagated yet.
+    Repeat the three terraform commands to recover.
+
 1. The outputs will look similar to the figure below.
 
     ```
