@@ -114,12 +114,6 @@ The service account attached to the instance will impersonate this standalone se
 
 1. You may be asked if you want to enable the Cloud Resource Manager API (`cloudresourcemanager.googleapis.com`).  Enter "y" to confirm.
 
-1. Enable the Identity and Access Management API.
-
-    ```
-    gcloud services enable iam.googleapis.com
-    ```
-
 ### Download the lab repository
 
 1. If you haven't already done so, clone this repository to your workstation.
