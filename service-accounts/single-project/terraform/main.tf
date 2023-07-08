@@ -80,6 +80,10 @@ resource "google_project_iam_binding" "compute_viewer_sa_binding" {
   members = [
     "serviceAccount:${google_service_account.compute_viewer_sa.email}"
   ]
+
+  depends_on = [
+    google_project_service.iam_service
+  ]
 }
 
 # The secret_admin_sa service account will be impersonated by the
@@ -101,6 +105,10 @@ resource "google_project_iam_binding" "secret_admin_sa_binding" {
   members = [
     "serviceAccount:${google_service_account.secret_admin_sa.email}"
   ]
+
+  depends_on = [
+    google_project_service.iam_service
+  ]
 }
 
 resource "google_service_account_iam_binding" "secret_admin_token_creator_binding" {
@@ -109,6 +117,10 @@ resource "google_service_account_iam_binding" "secret_admin_token_creator_bindin
 
   members = [
     "serviceAccount:${google_service_account.compute_viewer_sa.email}"
+  ]
+
+  depends_on = [
+    google_project_service.iam_service
   ]
 }
 
