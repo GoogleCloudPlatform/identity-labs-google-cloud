@@ -53,7 +53,7 @@ This installation was performed with the configuration listed below.
 Here is a diagram of what you will build.
 
 ![Google Compute Engine Architectural Overview](./img/single-project-impersonation-20230707v1.png)
-<p align="Center">Figure 1 - Identity-Aware Proxy lab architecture</p>
+<p align="Center">Figure 1 - Service account single project lab architecture</p>
 
 Figure 1 shows an
 instance running the Ubuntu operating system.
