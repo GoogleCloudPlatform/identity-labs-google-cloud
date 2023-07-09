@@ -123,6 +123,7 @@ For egress, the instance uses [Cloud NAT](https://cloud.google.com/nat/docs/over
     gcloud services enable iam.googleapis.com
     gcloud services enable iamcredentials.googleapis.com
     gcloud services enable compute.googleapis.com
+    gcloud services enable cloudresourcemanager.googleapis.com
     ```
 
 ### Download the lab repository
