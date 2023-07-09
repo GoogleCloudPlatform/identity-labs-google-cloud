@@ -117,10 +117,11 @@ The service account attached to the instance will impersonate this standalone se
 1. Enable the IAM, IAM Credentials, Compute Engine, and Resource Manager APIs.
 
     ```
-    gcloud services enable iam.googleapis.com
-    gcloud services enable iamcredentials.googleapis.com
-    gcloud services enable compute.googleapis.com
-    gcloud services enable cloudresourcemanager.googleapis.com
+    gcloud services enable \
+    iam.googleapis.com \
+    iamcredentials.googleapis.com \
+    compute.googleapis.com \
+    cloudresourcemanager.googleapis.com
     ```
 
 ### Download the lab repository
