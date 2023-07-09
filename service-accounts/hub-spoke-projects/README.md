@@ -120,10 +120,11 @@ For egress, the instance uses [Cloud NAT](https://cloud.google.com/nat/docs/over
 1. Enable the IAM, IAM Credentials, Compute Engine, and Resource Manager APIs in **both** of the new projects.
 
     ```
-    gcloud services enable iam.googleapis.com
-    gcloud services enable iamcredentials.googleapis.com
-    gcloud services enable compute.googleapis.com
-    gcloud services enable cloudresourcemanager.googleapis.com
+    gcloud services enable \
+    iam.googleapis.com \
+    iamcredentials.googleapis.com \
+    compute.googleapis.com \
+    cloudresourcemanager.googleapis.com
     ```
 
 ### Download the lab repository
