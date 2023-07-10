@@ -32,6 +32,9 @@ You will connect to this instance and create a secret to validate the permission
     * Using Terraform
 
 1. You have two new Google Cloud projects that will run in a non-production setting preferably in a Google Cloud organization.
+    One of these will be the hub project.
+    The other will be the spoke project.
+    As a suggestion, use the words "hub" or "spoke" in the project name to make it easier to keep track of the projects.
 
 1. The username used for building this demo must have the following project-level IAM role in  both projects.
 
@@ -149,7 +152,7 @@ For egress, the instance uses [Cloud NAT](https://cloud.google.com/nat/docs/over
 
 ### Deploy the lab
 
-1. Choose which project id will be the hub project and which will be the spoke project.
+1. If you have not yet done so, choose which project id will be the hub project and which will be the spoke project.
     In the remainder of this document, these will be referred to as *HUB_PROJECT* and *SPOKE_PROJECT*.
 
 1. Change to the Terraform directory.
