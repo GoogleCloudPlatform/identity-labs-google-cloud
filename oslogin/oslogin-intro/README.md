@@ -144,13 +144,14 @@ The instance uses [Cloud NAT](https://cloud.google.com/nat/docs/overview) for ou
     --project=PROJECT_ID
     ```
 
-1. Enable the IAM and Compute Engine APIs in the project.
+1. Enable the IAM, Compute Engine, and Resource Manager APIs in the project.
     Use the command below substituting your project ID for PROJECT_ID.
 
     ```
     gcloud services enable \
     iam.googleapis.com \
     compute.googleapis.com \
+    cloudresourcemanager.googleapis.com \
     --project PROJECT_ID
     ```
 
