@@ -152,6 +152,7 @@ The instance uses [Cloud NAT](https://cloud.google.com/nat/docs/overview) for ou
     iam.googleapis.com \
     compute.googleapis.com \
     --project PROJECT_ID
+    ```
 
 1. Use the commands below to build this Terraform module.
 
