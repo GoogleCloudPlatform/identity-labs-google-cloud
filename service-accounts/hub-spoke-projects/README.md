@@ -35,6 +35,7 @@ You will connect to this instance and create a secret to validate the permission
     One of these will be the hub project.
     The other will be the spoke project.
     As a suggestion, use the words "hub" or "spoke" in the project name to make it easier to keep track of the projects.
+    In the remainder of this document, these will be referred to as HUB_PROJECT and SPOKE_PROJECT.
 
 1. The username used for building this demo must have the following project-level IAM role in  both projects.
 
@@ -121,13 +122,15 @@ For egress, the instance uses [Cloud NAT](https://cloud.google.com/nat/docs/over
 1.  You may be asked if you want to enable the Cloud Resource Manager API (`cloudresourcemanager.googleapis.com`).  Enter "y" to confirm.
 
 1. Enable the IAM, IAM Credentials, Compute Engine, and Resource Manager APIs in **both** of the new projects.
+    Use the command below twice, once setting PROJECT_ID to HUB_PROJECT and then again setting PROJECT_ID to SPOKE_PROJECT.
 
     ```
     gcloud services enable \
     iam.googleapis.com \
     iamcredentials.googleapis.com \
     compute.googleapis.com \
-    cloudresourcemanager.googleapis.com
+    cloudresourcemanager.googleapis.com \
+    --project PROJECT_ID
     ```
 
 ### Download the lab repository
@@ -151,9 +154,6 @@ For egress, the instance uses [Cloud NAT](https://cloud.google.com/nat/docs/over
     ```
 
 ### Deploy the lab
-
-1. If you have not yet done so, choose which project id will be the hub project and which will be the spoke project.
-    In the remainder of this document, these will be referred to as *HUB_PROJECT* and *SPOKE_PROJECT*.
 
 1. Change to the Terraform directory.
 
