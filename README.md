@@ -51,6 +51,9 @@ You may wish to use a separate Google Cloud organization to keep things simple.
 In such cases, you should be comfortable with common Terraform commands (e.g. init, plan, apply, destroy).
 The instructions will tell you how to edit the configurations for your environment but if you know how to develop Terraform code you may gain additional insights into how the labs work.
 
+1. The labs are meant for teaching concepts.
+You should not use this code for production.
+
 ## Contributing
 
 See the [CONTRIBUTING.md](./CONTRIBUTING.md) file for more information.
