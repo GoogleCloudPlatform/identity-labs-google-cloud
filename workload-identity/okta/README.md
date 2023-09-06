@@ -24,7 +24,7 @@ The diagram shows a macOS client workstation.
 The client wants to create a bucket in Google Cloud storage.
 Traditionally, the client would need access to a Google Cloud service account key that that has permissions to create a bucket.
 If this service account key were to somehow become public, anyone having the key would be able to create a bucket.
-Rather than taking this approach, the client will reach out to Okta, an identity provider, to obtain a token and exchange it for short term Google Cloud credentials and use those credenitals to create the bucket.
+Rather than taking this approach, the client will reach out to Okta, an identity provider, to obtain a token and exchange it for short term Google Cloud credentials and use those credentials to create the bucket.
 
 ![High level diagram of workload identity federation with Okta](img/workload-identity-okta.png)
 
@@ -629,7 +629,7 @@ Addition of service-account level bindings completed.
     You should see output similar to that shown below.
 
     ```
-    Deleting workload identity pool wlilab-pool from project workload-identity-20230831...
+    Deleting workload identity pool wlilab-pool from project PROJECT_ID...
     Deleted workload identity pool [wlilab-pool].
     Deletion of workload identity pool completed.
     ```
