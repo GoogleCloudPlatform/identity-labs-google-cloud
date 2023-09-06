@@ -1,0 +1,6 @@
+#!/bin/sh
+
+# Enable the iamcredentials API to generate short-term credentials.
+
+gcloud services enable \
+  iamcredentials.googleapis.com

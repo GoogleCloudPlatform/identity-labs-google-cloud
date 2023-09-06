@@ -1,0 +1,12 @@
+#!/bin/sh
+
+# Create the Workload Identity Federation provider.
+
+echo Creating $WORKLOAD_PROVIDER in project $PROJECT_ID...
+gcloud iam workload-identity-pools providers create-oidc $WORKLOAD_PROVIDER \
+--workload-identity-pool="$WORKLOAD_POOL" \
+--issuer-uri="$ISSUER_URI" \
+--location="global" \
+--attribute-mapping="google.subject=assertion.sub" \
+--allowed-audiences="https://iam.googleapis.com/projects/$PROJECT_NUMBER/locations/global/workloadIdentityPools/$WORKLOAD_POOL/providers/$WORKLOAD_PROVIDER"
+echo Creation of $WORKLOAD_PROVIDER completed.

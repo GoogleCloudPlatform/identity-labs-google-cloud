@@ -1,0 +1,58 @@
+#!/usr/bin/env bash
+
+# Generate an STS token and write it to $STS_TOKEN_FILE
+#
+# The STS token exchange is done in accordance with RFC 8693.
+# See https://datatracker.ietf.org/doc/html/rfc8693 for more info.
+#
+# For additional info on calling STS using curl, see:
+# https://cloud.google.com/iam/docs/workforce-obtaining-short-lived-credentials
+#
+# Security note:
+#
+# Environment variables are used in commands here to make it easier to
+# understand what is happening.  This, however, is not a security best
+# practice because it may be possible to view these variables through
+# commands such as "ps." For more  security, use a programming language
+# to encode the values and place them in an authorization header.
+
+OKTA_TOKEN_FILE="/tmp/okta-token.json"
+STS_ENDPOINT="https://sts.googleapis.com/v1/token"
+STS_TOKEN_FILE="/tmp/sts-token.json"
+
+if [ ! -e "$OKTA_TOKEN_FILE" ]
+then
+  echo Okta token file $OKTA_TOKEN_FILE does not exist.
+  exit 1
+fi
+
+if [ -z "$PROJECT_NUMBER" -o -z "$WORKLOAD_POOL" -o -z "$WORKLOAD_PROVIDER" ]
+then
+  echo One of PROJECT_NUMBER, WORKLOAD_POOL, or WORKLOAD_PROVIDER is undefined.
+  echo Please source the environment file.
+  exit 2
+fi
+
+AUDIENCE="//iam.googleapis.com/projects/$PROJECT_NUMBER"\
+"/locations/global/workloadIdentityPools/$WORKLOAD_POOL"\
+"/providers/$WORKLOAD_PROVIDER"
+GRANT_TYPE="urn:ietf:params:oauth:grant-type:token-exchange"
+REQUESTED_TOKEN_TYPE="urn:ietf:params:oauth:token-type:access_token"
+SCOPE="https://www.googleapis.com/auth/cloud-platform"
+SUBJECT_TOKEN=`jq --raw-output .access_token "$OKTA_TOKEN_FILE"`
+SUBJECT_TOKEN_TYPE="urn:ietf:params:oauth:token-type:jwt"
+
+echo Generating STS token...
+STS_TOKEN=$(curl \
+--silent \
+--data-urlencode "audience=$AUDIENCE" \
+--data-urlencode "grant_type=$GRANT_TYPE" \
+--data-urlencode "requested_token_type=$REQUESTED_TOKEN_TYPE" \
+--data-urlencode "scope=$SCOPE" \
+--data-urlencode "subject_token=$SUBJECT_TOKEN" \
+--data-urlencode "subject_token_type=$SUBJECT_TOKEN_TYPE" \
+--url $STS_ENDPOINT \
+)
+
+echo Writing $STS_TOKEN_FILE...
+echo $STS_TOKEN|jq > $STS_TOKEN_FILE

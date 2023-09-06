@@ -1,0 +1,10 @@
+#!/bin/sh
+
+# Delete the Workload Identity Federation pool
+
+echo Deleting workload identity pool $WORKLOAD_POOL from project $PROJECT_ID...
+gcloud iam workload-identity-pools delete "$WORKLOAD_POOL" \
+--location="global" \
+--project=$PROJECT_ID \
+--quiet
+echo Deletion of workload identity pool completed.

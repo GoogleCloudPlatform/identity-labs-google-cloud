@@ -1,0 +1,29 @@
+#!/bin/sh
+
+# Delete temporary client files.
+
+OKTA_TOKEN_FILE=/tmp/okta-token.json
+STS_TOKEN_FILE="/tmp/sts-token.json"
+SA_TOKEN_FILE="/tmp/service-account-token.json"
+BUCKET_CONFIG_FILE=/tmp/bucket-config.json
+CREATE_BUCKET_RESULTS_FILE=/tmp/create-bucket-results
+DELETE_BUCKET_RESULTS_FILE=/tmp/delete-bucket-results
+
+ARRAY_OF_FILES=( \
+"$OKTA_TOKEN_FILE" \
+"$STS_TOKEN_FILE" \
+"$SA_TOKEN_FILE" \
+"$BUCKET_CONFIG_FILE" \
+"$CREATE_BUCKET_RESULTS_FILE" \
+"$DELETE_BUCKET_RESULTS_FILE" \
+)
+
+echo Beginning deletion of temporary project files...
+
+for FILE in ${ARRAY_OF_FILES[@]}
+do
+  echo deleting $FILE...
+  rm -f $FILE
+done
+
+echo All temporary project files have been deleted.

@@ -1,0 +1,41 @@
+#!/usr/bin/env bash
+
+# Generate an OKTA token and write it to $OKTA_TOKEN_FILE
+#
+# This implements a Client Credentials Grant as mentioned in RFC 6749,
+# the OAuth 2.0 authorization framework.
+#
+# See this link:
+# https://datatracker.ietf.org/doc/html/rfc6749#section-4.4
+#
+# Security note:
+#
+# Environment variables are used in commands here to make it easier to
+# understand what is happening.  This, however, is not a security best
+# practice because it may be possible to view these variables through
+# commands such as "ps." For more  security, use a programming language
+# to encode the values and place them in an authorization header.
+
+if [ -z "$CLIENT_ID" -o -z "$CLIENT_SECRET" -o -z "$OKTA_AZ_SERVER" ]
+then
+  echo At least one of CLIENT_ID, CLIENT_SECRET, or OKTA_AZ_SERVER is empty.
+  echo Please source the environment variable file.
+  exit 1
+fi
+
+OKTA_TOKEN_FILE=/tmp/okta-token.json
+
+echo Generating Okta token...
+OKTA_TOKEN=$( \
+curl \
+--silent \
+--request POST \
+--header "content-type: application/x-www-form-urlencoded" \
+--data client_id=$CLIENT_ID \
+--data client_secret=$CLIENT_SECRET \
+--data grant_type=client_credentials \
+--url $OKTA_AZ_SERVER \
+)
+
+echo Writing $OKTA_TOKEN_FILE...
+echo $OKTA_TOKEN|jq >$OKTA_TOKEN_FILE

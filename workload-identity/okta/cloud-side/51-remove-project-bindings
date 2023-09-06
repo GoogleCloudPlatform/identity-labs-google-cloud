@@ -1,0 +1,24 @@
+#!/bin/sh
+
+# Remove project level bindings for the service account
+
+# The storage.admin role is needed for creating and deleting buckets.
+
+echo Removing bindings for $SERVICE_ACCOUNT_BASE in project $PROJECT_ID...
+
+echo Removing the storage.admin role...
+gcloud projects remove-iam-policy-binding $PROJECT_ID \
+--member="serviceAccount:$SERVICE_ACCOUNT_NAME" \
+--role="roles/storage.admin" \
+--no-user-output-enabled
+
+# The serviceUsageConsumer role is needed for Workload Identity Federation.
+
+echo Removing the serviceusage.serviceUsageConsumer role...
+gcloud projects remove-iam-policy-binding $PROJECT_ID \
+--member="serviceAccount:$SERVICE_ACCOUNT_NAME" \
+--role="roles/serviceusage.serviceUsageConsumer" \
+--no-user-output-enabled
+
+echo Removal of project-level bindings completed.
+echo Binding removal completed.

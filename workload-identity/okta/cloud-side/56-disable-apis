@@ -1,0 +1,6 @@
+#!/bin/sh
+
+# Disable the iamcredentials API 
+
+gcloud services disable \
+  iamcredentials.googleapis.com

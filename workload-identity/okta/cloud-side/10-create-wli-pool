@@ -1,0 +1,8 @@
+#!/bin/sh
+
+# Create the Workload Identity Federation pool
+
+gcloud iam workload-identity-pools create "$WORKLOAD_POOL" \
+--location="global" \
+--description="Workload Identity Federation IAM Academy lab pool" \
+--display-name="$WORKLOAD_POOL"

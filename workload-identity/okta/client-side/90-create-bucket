@@ -1,0 +1,103 @@
+#!/usr/bin/env bash
+
+# Create a bucket using a service account access token
+#
+# Security note:
+#
+# Environment variables are used in commands here to make it easier to
+# understand what is happening.  This, however, is not a security best
+# practice because it may be possible to view these variables through
+# commands such as "ps." For more  security, use a programming language
+# to encode the values and place them in an authorization header.
+
+SA_TOKEN_FILE="/tmp/service-account-token.json"
+BUCKET_CONFIG_FILE=/tmp/bucket-config.json
+CREATE_BUCKET_RESULTS_FILE=/tmp/create-bucket-results
+DELETE_BUCKET_RESULTS_FILE=/tmp/delete-bucket-results
+
+if [ ! -e "$SA_TOKEN_FILE" ]
+then
+  echo Service account token file $SA_TOKEN_FILE does not exist.
+  exit 1
+fi
+
+if [ -z "$BUCKET_LOCATION" -o -z "$PROJECT_NUMBER" ]
+then
+  echo Either PROJECT_NUMBER or BUCKET_LOCATION is undefined.
+  echo Please source the environment file.
+  exit 2
+fi
+
+CREATE_BUCKET_URL=\
+"https://storage.googleapis.com/storage/v1"\
+"/b?project=$PROJECT_NUMBER"
+SA_TOKEN=`jq --raw-output .accessToken "$SA_TOKEN_FILE"`
+
+# Generate a random suffix for the bucket name using /dev/urandom.
+# Set LC_CTYPE to ensure proper byte sequences.
+# Use the "lower" class to force only lower case characters since
+# Google Cloud Storage buckets cannot contain uppercase characters.
+
+export LC_CTYPE=C
+RANDOM_SUFFIX=`cat /dev/urandom | tr -dc '[:lower:]' | fold -w 8} | head -n 1`
+BUCKET_NAME="wlilab-"$RANDOM_SUFFIX
+
+cat <<EOF >$BUCKET_CONFIG_FILE
+{
+"name": "$BUCKET_NAME",
+"location": "$BUCKET_LOCATION",
+}
+EOF
+
+echo creating bucket $BUCKET_NAME...
+
+STATUS=$(curl \
+--output $CREATE_BUCKET_RESULTS_FILE \
+--show-error \
+--no-progress-meter \
+--silent \
+--write-out "%{http_code}\\n" \
+--request POST \
+--data-binary @$BUCKET_CONFIG_FILE \
+--header "Content-Type: application/json" \
+--header "Authorization: Bearer $SA_TOKEN" \
+--url "$CREATE_BUCKET_URL" \
+)
+
+if [ "$STATUS" -eq "200" ]
+then
+  echo The bucket was successfully created.
+  echo Check $CREATE_BUCKET_RESULTS_FILE for information about the bucket.
+else
+  echo There may have been a problem \(Status = $STATUS\).
+  echo Check $CREATE_BUCKET_RESULTS_FILE for any messages.
+  exit 1
+fi
+
+DELETE_BUCKET_URL=\
+"https://storage.googleapis.com/storage/v1"\
+"/b/$BUCKET_NAME"
+
+
+echo
+echo Now deleting bucket $BUCKET_NAME...
+
+STATUS=$(curl \
+--output $DELETE_BUCKET_RESULTS_FILE \
+--show-error \
+--no-progress-meter \
+--silent \
+--write-out "%{http_code}\\n" \
+--request DELETE \
+--header "Authorization: Bearer $SA_TOKEN" \
+--url "$DELETE_BUCKET_URL" \
+)
+
+if [ "$STATUS" -eq "204" ]
+then
+  echo The bucket was successfully deleted.
+else
+  echo There may have been a problem \(Status = $STATUS\).
+  echo Check $DELETE_BUCKET_RESULTS_FILE for any messages.
+  exit 2
+fi
