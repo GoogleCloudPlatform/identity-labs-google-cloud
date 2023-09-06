@@ -26,11 +26,15 @@ The complete structure of the repository appears below.
 │   │
 │   └── <a href="./oslogin/oslogin-intro" title="oslogin-intro">oslogin-intro</a>
 │
-└── <a href="./service-accounts" title="service-accounts">service-accounts</a>
-    │
-    ├── <a href="./service-accounts/hub-spoke-projects" title="hub-spoke-projects">hub-spoke-projects</a>
-    │
-    └── <a href="./service-accounts/single-project" title="single-project">single-project</a>
+├── <a href="./service-accounts" title="service-accounts">service-accounts</a>
+|   │
+|   ├── <a href="./service-accounts/hub-spoke-projects" title="hub-spoke-projects">hub-spoke-projects</a>
+|   │
+|   └── <a href="./service-accounts/single-project" title="single-project">single-project</a>
+|
+└── <a href="./workload-identity" title="service-accounts">workload-identity</a>
+    |
+    └── <a href="./workload-identity/okta" title="okta">okta</a>
 </pre>
 
 ## Project requirements
