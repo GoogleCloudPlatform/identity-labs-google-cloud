@@ -18,6 +18,7 @@ Here are the collections.
 | :--- | :--- |
 | [oslogin](./oslogin/) | labs related to OS Login |
 | [service-accounts](./service-accounts/) | labs related to service accounts |
+| [workload-identity](./workload-identity/) | labs related to Workload Identity Federation |
 
 The complete structure of the repository appears below.
 
